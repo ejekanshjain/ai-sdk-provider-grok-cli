@@ -64,5 +64,14 @@
   },
   "peerDependencies": {
     "zod": "^4.1.8"
+  },
+  "author": "Ekansh Jain",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ejekanshjain/ai-sdk-provider-grok-cli.git"
+  },
+  "homepage": "https://github.com/ejekanshjain/ai-sdk-provider-grok-cli#readme",
+  "bugs": {
+    "url": "https://github.com/ejekanshjain/ai-sdk-provider-grok-cli/issues"
   }
 }

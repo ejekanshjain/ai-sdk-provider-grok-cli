@@ -77,6 +77,8 @@ export class GrokStreamMapper {
   private blocks = new Map<number, OpenBlock>()
   private streamedMessage = false
   private lastMessageText = ''
+  private textInEarlierMessage = false
+  private textInThisMessage = false
   private toolNames = new Map<string, string>()
   private emittedToolCalls = new Set<string>()
   private emittedToolResults = new Set<string>()
@@ -136,7 +138,7 @@ export class GrokStreamMapper {
     switch (event.type) {
       case 'message_start':
         this.streamedMessage = true
-        this.lastMessageText = ''
+        this.startMessage()
         return []
       case 'content_block_start':
         return event.content_block ? this.openBlock(index, event.content_block) : []
@@ -186,7 +188,7 @@ export class GrokStreamMapper {
     if (open.kind === 'text') {
       this.lastMessageText += text
       if (this.options.jsonMode) return []
-      return [{ type: 'text-delta', id: open.id, delta: text }]
+      return [{ type: 'text-delta', id: open.id, delta: this.separated(text) }]
     }
     return [{ type: 'reasoning-delta', id: open.id, delta: text }]
   }
@@ -214,7 +216,7 @@ export class GrokStreamMapper {
     const streamed = this.streamedMessage
     this.streamedMessage = false
     const parts: LanguageModelV4StreamPart[] = []
-    if (!streamed) this.lastMessageText = ''
+    if (!streamed) this.startMessage()
 
     for (const block of content) {
       if (TOOL_USE_TYPES.has(block.type) && block.id) {
@@ -239,7 +241,7 @@ export class GrokStreamMapper {
         continue
       } else if (block.type === 'text' && block.text) {
         this.lastMessageText += block.text
-        if (!this.options.jsonMode) parts.push(...this.textPart(block.text))
+        if (!this.options.jsonMode) parts.push(...this.textPart(this.separated(block.text)))
       } else if (block.type === 'thinking' && block.thinking) {
         const id = this.options.generateId()
         parts.push(
@@ -285,6 +287,23 @@ export class GrokStreamMapper {
 
   private toolCall(toolCallId: string, toolName: string, input: string): LanguageModelV4StreamPart {
     return { type: 'tool-call', toolCallId, toolName, input, providerExecuted: true, dynamic: true }
+  }
+
+  /** Marks the start of a new model message. Grok sends one message per agent turn. */
+  private startMessage() {
+    this.textInEarlierMessage ||= this.textInThisMessage
+    this.textInThisMessage = false
+    this.lastMessageText = ''
+  }
+
+  /**
+   * Prefixes the first text of a later turn with a blank line. All Grok turns form one AI SDK
+   * step, so without it the text before and after a tool call runs together.
+   */
+  private separated(text: string): string {
+    const prefix = this.textInEarlierMessage && !this.textInThisMessage ? '\n\n' : ''
+    this.textInThisMessage = true
+    return prefix + text
   }
 
   private textPart(text: string): LanguageModelV4StreamPart[] {

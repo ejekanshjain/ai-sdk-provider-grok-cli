@@ -81,6 +81,18 @@ describe('GrokStreamMapper', () => {
     expect(ofType(parts, 'text-delta')[0]?.delta).toBe('Done.')
   })
 
+  it('separates text from different agent turns with a blank line', () => {
+    const { parts } = replay([
+      { type: 'assistant', message: { content: [{ type: 'text', text: 'Let me check.' }] } },
+      { type: 'assistant', message: { content: [{ type: 'text', text: 'Blue' }] } }
+    ])
+
+    expect(ofType(parts, 'text-delta').map(part => part.delta)).toEqual([
+      'Let me check.',
+      '\n\nBlue'
+    ])
+  })
+
   it('emits only the structured output as text in JSON mode', () => {
     const { parts } = replay(
       [

@@ -1,0 +1,68 @@
+{
+  "name": "ai-sdk-provider-grok-cli",
+  "version": "0.1.0",
+  "description": "AI SDK v7 provider for the xAI Grok CLI (Grok Build)",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepare": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "npm run typecheck && npm run format && npm run lint && npm run test && npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ai-sdk",
+    "grok",
+    "grok-build",
+    "xai",
+    "cli",
+    "language-model",
+    "provider"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@ai-sdk/provider": "^4.0.18",
+    "@ai-sdk/provider-utils": "^5.0.47"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^22.20.4",
+    "ai": "^7.0.114",
+    "eslint": "^9.39.5",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.9",
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^3.2.7",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "zod": "^4.1.8"
+  }
+}
